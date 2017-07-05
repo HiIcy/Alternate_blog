@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% import "_macros.html" as macros %}
+
+{% block title %}二姐说: {{ title }}{{ user.username }}{% endblock %}
+{% block page_content %}
+<div class="page-header">
+    <h1>{{ title }}{{ user.username }}</h1>
+</div>
+<table class="table table-hover followers">
+    <thead><tr><th>User</th><th>Since</th></tr></thead>
+{# 用user 字典巧用 来代替，达到跟随者，与跟随的人 的通用，#}
+    {% for follow in follows %}
+    {% if follow.user != user %}
+    <tr>
+        <td><a href="{{ url_for('.user',username=follow.user.username) }}">
+            <img class="img-rounded" src="{{ follow.user.gravatar(size=32) }}" alt="No">
+            {{ follow.user.username }}
+        </a></td>
+        <td>{{ moment(follow.timestamp).format('LL') }}</td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+</table>
+<div class="pagination">
+{#    对于关键字参数，不需要在函数声明时指明，**kwargs会自己解析 宏#}
+    {{ macros.pagination_widget(pagination, endpoint, username=user.username) }}
+</div>
+{% endblock %}

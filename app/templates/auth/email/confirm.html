@@ -1,0 +1,15 @@
+
+<div class="page-header">
+    <h1>Dear {{ user.username }},</h1>
+    <h2>Welcome to Flasky!</h2>
+<p>To confirm your account please click on the following link:
+    <a href="{{ url_for('auth.confirm', token=token, _external=True) }}">click here</a></p>
+    <p>Alternatively, you can paste the following link in your browser's address bar:</p>
+    <p>{{ url_for('auth.confirm', token=token, _external=True) }}</p>
+    <h2>Sincerely,</h2>
+<h2>The Flasky Team
+    <small>
+        Note: replies to this email address are not monitored
+    </small>
+</h2>
+</div>

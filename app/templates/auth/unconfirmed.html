@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}
+{{ super() }}
+{% endblock %}
+{% block page_content %}
+{#    moment 处理时间 #}
+{#    {{ moment.lang('es') }}#}
+{#     <p>The local date and 时间 is {{ moment(current_time).format('LLL') }}.</p>#}
+{#    <p>That was {{ moment(current_time).fromNow(refresh=True) }}</p>#}
+    <div class="page-header">
+{#    current_user 是flask-login 默认的标签 #}
+        <h1>Hello,{{ current_user.username }}</h1>
+            <h2>
+                You have not confirmed your account,
+            </h2>
+            <h3>
+                Before you can access this site you need to confirm Account. Check your inbox,
+                you Should have received
+                an email with a link.</h3>
+                <h3>Need another confirmation email?
+                    <a href="{{ url_for("auth.resend_confirmation") }}">Click here</a>
+                </h3>
+
+    </div>
+{% endblock %}

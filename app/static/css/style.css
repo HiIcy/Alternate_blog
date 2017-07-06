@@ -29,7 +29,7 @@ div.post-date {
     float: right;
 }
 div.post-author {
-    font-weight: bold;
+    float: left;
 }
 div.post-thumbnail {
     position: absolute;

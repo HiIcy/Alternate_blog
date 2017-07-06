@@ -266,15 +266,14 @@ def server_shutdown():
 	shutdown()
 	return 'Shutting down...'
 
-
 # 在视图函数处理完请求之后执行。Flask 把响应对象传给after_app_
 # request 处理程序，以防需要修改响应
-@main.after_app_request
-def after_request(response):  # 报告缓慢的数据库查询
-	# get_debug_queries 返回一个记录列表
-	for query in get_debug_queries():
-		if query.duration >= current_app.config['FLASKY_SLOW_DB_QUERY_TIME']:
-			current_app.logger.warning(
-				'Slow query: %s\nParameters: %s\nDuration: %fs\nContext: %s\n' %
-				(query.statement, query.parameters, query.duration, query.context))
-	return response
+# @main.after_app_request
+# def after_request(response):  # 报告缓慢的数据库查询
+# 	# get_debug_queries 返回一个记录列表
+# 	for query in get_debug_queries():
+# 		if query.duration >= current_app.config['FLASKY_SLOW_DB_QUERY_TIME']:
+# 			current_app.logger.warning(
+# 				'Slow query: %s\nParameters: %s\nDuration: %fs\nContext: %s\n' %
+# 				(query.statement, query.parameters, query.duration, query.context))
+# 	return response

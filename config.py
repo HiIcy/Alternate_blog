@@ -8,6 +8,11 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
+	UPLOAD_FILE_FOLDER = os.path.join(basedir, 'app\upload\\file')
+	# UPLOAD_PHOTO_FOLDER = os.path.join(basedir, 'app\upload\photo')
+	UPLOAD_PHOTO_FOLDER = os.getcwd() + '/app/static/avatar/'
+	MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB ,,
+
 	SQLALCHEMY_RECORD_QUERIES = True
 	FLASKY_DB_QUERY_TIMEOUT = 0.5
 	FLASK_COVERAGE = None
@@ -16,15 +21,17 @@ class Config:
 	FLASKY_FOLLOWERS_PER_PAGE = 6
 	SQLALCHEMY_COMMIT_ON_TEARDOWN = True
 	FLASKY_MAIL_SUBJECT_PREFIX = '[Flasky]'
-	FLASKY_MAIL_SENDER = os.environ.get('MAIL_USERNAME')
-	FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
+	FLASKY_MAIL_SENDER = 'Flasky Admin <623108389@qq.com>'
+	# 后头记得用环境变量改
+	FLASKY_ADMIN = '623108389@qq.com'
 	MAIL_PORT = 465
 	MAIL_USE_SSL = True
-	MAIL_USE_TLS = True
+	# MAIL_USE_TLS = True
 	MAIL_SERVER = 'smtp.qq.com'
-	MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+	MAIL_USERNAME = '623108389@qq.com'
 	# 授权码
-	MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+	# MAIL_PASSWORD =
+	MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
 
 	@staticmethod
 	def init_app(app):

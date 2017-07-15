@@ -3,7 +3,8 @@
     {{ super() }}
     <link  rel="shortcut icon" href="{{ url_for('static',filename='flasky.ico') }}" type="image/x-icon">
     <link rel="icon" href="{{ url_for('static', filename='flasky.ico') }}" type="image/x-icon">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+
 {% endblock %}
 {% block navbar %}
 {#    标题栏  #}
@@ -28,7 +29,11 @@
                {% if current_user.is_authenticated %}
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <img src="{{ current_user.gravatar(size=18) }}">
+                        {% if current_user.avatar %}
+            <img  class="img-rounded profile-thumbnail" src="{{ current_user.avatar }}" >
+        {% else %}
+            <img class="img-rounded profile-thumbnail" src="#">
+        {% endif %}
                         {{ current_user.username }} <b class="caret"></b>
                     </a>
                     <ul class="dropdown-menu">
@@ -41,6 +46,7 @@
                         {% endif %}
                         <li><a href="{{ url_for('auth.change_password') }}">Change Password</a></li>
                         <li><a href="{{ url_for('auth.change_email_request') }}">Change Email</a></li>
+                        <li><a href="{{ url_for('main.write_article',id=current_user.id) }}">Write Article</a> </li>
                         <li role="separator" class="divider"></li>
                         <li><a href="{{ url_for('auth.logout') }}">Log out</a></li>
                         {% if current_user.can(Permission.MODERATE_COMMENTS) %}

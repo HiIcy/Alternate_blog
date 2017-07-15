@@ -1,13 +1,17 @@
 # coding=utf-8
+import os
 from datetime import datetime
 from flask import render_template, session, redirect, url_for, abort, flash, request, current_app, make_response
 from flask_login import current_user, login_required
 from app.decorators import admin_required, permission_required
-from app.main.forms import EditProfileForm, EditProfileAdminForm, PostForm, CommentForm
+from app.main.forms import EditProfileForm, EditProfileAdminForm, PostForm, CommentForm, AvatarForm
 from . import main
 from .. import db
+from PIL import Image
 from ..models import User, Role, Permission, Post, Comment
 from flask_sqlalchemy import get_debug_queries
+
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 
 @main.route('/', methods=['GET', 'POST'])
@@ -18,10 +22,12 @@ def index():
 		# _get_current_object获得一个数据库真正用户对象
 		# current_user轻度包装
 		# 和所有上下文变量一样，是通过线程内的代理对象实现。这个对象的表现类似用户对象
-		post = Post(body=form.body.data, author=current_user._get_current_object())
+		post = Post(body=form.body.data,
+					author=current_user._get_current_object())
 		db.session.add(post)
 	# 从请求的查询字符串（request.args）中获取
-	page = request.args.get('page', 1, type=int)  # 默认第一页，参数type=int 保证参数无法转换成整数时，返回默认值
+	# 默认第一页，参数type=int 保证参数无法转换成整数时，返回默认值
+	page = request.args.get('page', 1, type=int)
 	show_followed = False
 	if current_user.is_authenticated:
 		show_followed = bool(request.cookies.get('show_followed', ''))
@@ -31,21 +37,28 @@ def index():
 		query = Post.query
 	# 按时间戳降序排列 数据库中所有博客文章
 	pagination = query.order_by(Post.timestamp.desc()).paginate(
+		# 存在实例化的app后就可以通过.config[]去获取config文件的东西
 		page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
 		error_out=False)
 	posts = pagination.items
 	return render_template('index.html', form=form, posts=posts,
-	                       pagination=pagination, show_followed=show_followed)
+						   pagination=pagination, show_followed=show_followed)
 
 
 @main.route('/user/<username>')
 def user(username):
 	user = User.query.filter_by(username=username).first()
+
 	# 要考虑存不存在的情况
 	if user is None:
 		abort(404)
-	posts = user.posts.order_by(Post.timestamp.desc()).all()
-	return render_template('user.html', user=user, posts=posts)
+	page = request.args.get('page', 1, type=int)
+	pagination = user.posts.order_by(Post.timestamp.desc()).paginate(
+		page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
+		error_out=False)
+	posts = pagination.items
+	return render_template('user.html', user=user, posts=posts,
+						   pagination=pagination)
 
 
 @main.route('/edit-profile', methods=['GET', 'POST'])
@@ -101,15 +114,15 @@ def post(id):
 	form = CommentForm()
 	if form.validate_on_submit():
 		comment = Comment(body=form.body.data, post=post,
-		                  # current_user 上下文代理对象
-		                  author=current_user._get_current_object())
+						  # current_user 上下文代理对象
+						  author=current_user._get_current_object())
 		db.session.add(comment)
 		flash("Your comment has been published ")
 		return redirect(url_for(".post", id=post.id, page=-1))
 	page = request.args.get('page', 1, type=int)
 	if page == -1:
 		page = (post.comments.count() - 1) / \
-		       current_app.config['FLASKY_FOLLOWERS_PER_PAGE'] + 1
+			current_app.config['FLASKY_FOLLOWERS_PER_PAGE'] + 1
 	pagination = post.comments.order_by(Comment.timestamp.asc()).paginate(
 		page, per_page=current_app.config['FLASKY_FOLLOWERS_PER_PAGE'],
 		error_out=True)
@@ -117,7 +130,7 @@ def post(id):
 	# 传入列表，因为只有这样，index.html和user.html引用的_posts.html
 	# 模板才能在这个页面中使用
 	return render_template('post.html', posts=[post], form=form,
-	                       comments=comments, pagination=pagination)
+						   comments=comments, pagination=pagination)
 
 
 @main.route('/edit/<int:id>', methods=['GET', 'POST'])
@@ -178,12 +191,12 @@ def followers(username):
 		return redirect(url_for('.index'))
 	page = request.args.get('page', 1, type=int)
 	pagination = user.followers.paginate(page, per_page=current_app.config['FLASKY_FOLLOWERS_PER_PAGE'],
-	                                     error_out=True)
+										 error_out=True)
 	# 提取所有跟随者，
 	follows = [{'user': item.follower, 'timestamp': item.timestamp}
-	           for item in pagination.items]
+			   for item in pagination.items]
 	return render_template('followers.html', user=user, title="Followers of, ",
-	                       endpoint='.followers', pagination=pagination, follows=follows)
+						   endpoint='.followers', pagination=pagination, follows=follows)
 
 
 @main.route('/followed_by/<username>')
@@ -196,12 +209,12 @@ def followed_by(username):
 	page = request.args.get('page', 1, type=int)
 	# 2：对目标数据构造分页器对象，
 	pagination = user.followed.paginate(page, per_page=current_app.config['FLASKY_FOLLOWERS_PER_PAGE'],
-	                                    error_out=True)
+										error_out=True)
 	follows = [{'user': item.followed, 'timestamp': item.timestamp}
-	           for item in pagination.items]
+			   for item in pagination.items]
 	# 3：传过去，借用其方法实现效果
 	return render_template('followers.html', user=user, title="Followed by, ",
-	                       endpoint='.followed_by', pagination=pagination, follows=follows)
+						   endpoint='.followed_by', pagination=pagination, follows=follows)
 
 
 @main.route('/all')
@@ -231,7 +244,7 @@ def moderate():
 		error_out=True)
 	comments = pagination.items
 	return render_template('moderate.html', comments=comments,
-	                       pagination=pagination, page=page)
+						   pagination=pagination, page=page)
 
 
 @main.route('/moderate/enable/<int:id>')
@@ -242,7 +255,7 @@ def moderate_enable(id):
 	comment.disabled = False
 	db.session.add(comment)
 	return redirect(url_for('.moderate',
-	                        page=request.args.get('page', 1, type=int)))
+							page=request.args.get('page', 1, type=int)))
 
 
 @main.route('/moderate/disable/<int:id>')
@@ -253,7 +266,7 @@ def moderate_disable(id):
 	comment.disabled = True
 	db.session.add(comment)
 	return redirect(url_for('.moderate',
-	                        page=request.args.get('page', 1, type=int)))
+							page=request.args.get('page', 1, type=int)))
 
 
 @main.route('/shutdown')
@@ -265,6 +278,64 @@ def server_shutdown():
 		abort(500)
 	shutdown()
 	return 'Shutting down...'
+
+
+@main.route('/user/<int:id>/write-article', methods=['GET', 'POST'])
+@permission_required(Permission.WRITE_ARTICLES)
+@login_required
+def write_article(id):
+	# flask 多用query来查询，，
+	user = User.query.get_or_404(id)
+	form = PostForm()
+	if current_user != user:
+		abort(403)
+	if form.validate_on_submit() and current_user.can(Permission.WRITE_ARTICLES):
+		post = Post(body=form.body.data, author=user)
+		db.session.add(post)
+		return redirect(url_for('.index'))
+	return render_template('edit_post.html', form=form)
+
+# 上传头像
+@main.route('/user/<int:id>/upload_avatar', methods=['GET', 'POST'])
+@login_required
+def upload_avatar(id):
+	user = User.query.get_or_404(id)
+	flash('wahg')
+	if user is None:
+		flash('none')
+		abort(403)
+	if current_user != user:
+		flash("kong")
+		abort(403)
+	form = AvatarForm()
+	if request.method == 'POST':
+		# flash('heel')
+		# 获取上传的文件
+		# avatar = request.files['avatar']
+		avatar = form.avatar.data
+		size = (40,40)
+		im = Image.open(avatar)
+		im.thumbnail(size) # 修改图片大小
+		UPLOAD_FOLDER = current_app.config['UPLOAD_PHOTO_FOLDER']
+		if not allowed_file(avatar.filename):
+			flash('文件类型错误')
+			return redirect(url_for('.user', user=user.username))
+		# secure_filename(filename) 对文件命名保护
+		# 保存上传文件到某个位置
+		im.save('{}\{}_{}'.format(
+			UPLOAD_FOLDER, current_user.username, avatar.filename))
+		current_user.avatar ='/static/avatar/{}_{}'.format(current_user.username, avatar.filename)
+
+		# current_user.avatar = '/static/avatar/{}_{}'.format(
+		# 	current_user.username, avatar.filename)
+		db.session.add(current_user)
+		flash(u'修改成功')
+		return redirect(url_for('.user', username=current_user.username))
+
+	return render_template('upload_avatar.html', user=user)
+# 限定文件上传类型
+def allowed_file(filename):
+	return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 # 在视图函数处理完请求之后执行。Flask 把响应对象传给after_app_
 # request 处理程序，以防需要修改响应

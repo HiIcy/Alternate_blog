@@ -3,8 +3,11 @@
     <li class="comment">
         <div class="comment-thumbnail">
             <a href="{{ url_for('.user', username=comment.author.username) }}">
-                <img class="img-rounded profile-thumbnail" src="{{ comment.author.gravatar(size=40) }}">
-            </a>
+            {% if user.avatar %}
+            <img  class="img-rounded profile-thumbnail" src="{{ user.avatar }}" >
+        {% else %}
+            <img class="img-rounded profile-thumbnail" src="">
+        {% endif %}
         </div>
         <div class="comment-content">
             <div class="comment-date">{{ moment(comment.timestamp).fromNow() }}</div>

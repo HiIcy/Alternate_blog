@@ -3,4 +3,8 @@ media/
 *.sqlite
 *.txt
 tmp
+*.jpg
+*.jpeg
+*.gif
+
 

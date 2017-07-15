@@ -8,6 +8,8 @@ from flask_sqlalchemy import SQLAlchemy
 from config import config
 from flask_login import LoginManager
 
+
+
 login_manager = LoginManager()
 login_manager.session_protection = "strong"
 login_manager.login_view = 'auth.login'
@@ -30,6 +32,7 @@ def create_app(config_name):
 	login_manager.init_app(app)
 	pagedown.init_app(app)
 	db.init_app(app)
+
 	# 附加路由和自定义的错误页面
 
 	# 蓝本要在工厂函数里附加到程序中，注册蓝本

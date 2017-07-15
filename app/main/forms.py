@@ -1,6 +1,7 @@
 # _*_coding:utf-8 _*_
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, TextAreaField, BooleanField, SelectField
+from wtforms import StringField, SubmitField, TextAreaField, BooleanField, SelectField,FileField
+
 from wtforms.validators import DataRequired, Length, Email, Regexp, ValidationError
 from flask_pagedown.fields import PageDownField
 from app.models import Role, User
@@ -53,4 +54,8 @@ class PostForm(FlaskForm):
 
 class CommentForm(FlaskForm):
 	body = StringField("leave your comment")
+	submit = SubmitField("Submit")
+
+class AvatarForm(FlaskForm):
+	avatar = FileField('头像上传')
 	submit = SubmitField("Submit")

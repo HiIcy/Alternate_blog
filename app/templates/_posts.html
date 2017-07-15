@@ -5,7 +5,15 @@
                     <a href="{{ url_for('.user', username=post.author.username) }}">
                         <img class="img-rounded profile-thumbnail"
 {#                             后面要改成自定义文件上传 #}
-                             src="{{ post.author.gravatar(size=40) }}">
+                                {% if post.author %}
+                                        {% if post.author.avatar %}
+                                         src="{{ post.author.avatar }}" >
+                                        {% else %}
+                                        src="#">
+                                        {% endif %}
+                                {% else %}
+                                src="#" alt=no
+                                {% endif %}
                     </a>
                 </div>
                 <div class="post-content">

@@ -11,6 +11,7 @@ from flask import current_app, request, url_for
 from markdown import markdown
 import bleach
 from app.exceptions import ValidationError
+from PIL import Image
 
 
 # 用户的权限常量
@@ -73,6 +74,8 @@ class User(UserMixin, db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(64))
 	location = db.Column(db.String(64))
+	# 头像也用String 这点django好
+	avatar = db.Column(db.String(64), default=None)
 	about_me = db.Column(db.Text())
 	# 字段接收函数对象，到时自动触发函数，所以无括号
 	member_since = db.Column(db.DateTime(), default=datetime.utcnow)
@@ -111,6 +114,7 @@ class User(UserMixin, db.Model):
 			self.avatar_hash = hashlib.md5(self.email.encode('utf-8')).hexdigest()
 		self.follow(self)
 
+	# 写api时用，
 	def to_json(self):
 		json_user = {
 			'url': url_for('api.get_post', id=self.id, _external=True),
@@ -243,6 +247,7 @@ class User(UserMixin, db.Model):
 			return None
 		return User.query.get(data['id'])
 
+
 	@staticmethod  # 生成虚拟用户和博客文章
 	def generate_fake(count=100):
 		from sqlalchemy.exc import IntegrityError
@@ -265,7 +270,7 @@ class User(UserMixin, db.Model):
 			except IntegrityError:
 				db.session.rollback()
 
-	# 创建函数更新数据库这一技术经常用来更新已部署的程序
+	# 模型中创建函数更新数据库这一技术经常用来更新已部署的程序
 	@staticmethod
 	def add_self_follow():
 		for user in User.query.all():

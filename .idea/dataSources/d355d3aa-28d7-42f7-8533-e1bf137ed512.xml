@@ -238,24 +238,28 @@ followed_id</ColNames>
       <Position>11</Position>
       <DataType>VARCHAR(64)|0</DataType>
     </column>
-    <index id="65" parent="9" name="ix_users_email">
+    <column id="65" parent="9" name="avatar">
+      <Position>12</Position>
+      <DataType>VARCHAR(64)|0</DataType>
+    </column>
+    <index id="66" parent="9" name="ix_users_email">
       <ColNames>email</ColNames>
       <Unique>1</Unique>
     </index>
-    <index id="66" parent="9" name="ix_users_username">
+    <index id="67" parent="9" name="ix_users_username">
       <ColNames>username</ColNames>
       <Unique>1</Unique>
     </index>
-    <key id="67" parent="9">
+    <key id="68" parent="9">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>
-    <foreign-key id="68" parent="9">
+    <foreign-key id="69" parent="9">
       <ColNames>role_id</ColNames>
       <RefTableName>roles</RefTableName>
       <RefColNames>id</RefColNames>
     </foreign-key>
-    <check id="69" parent="9">
+    <check id="70" parent="9">
       <Predicate>confirmed IN (0, 1)</Predicate>
     </check>
   </database-model>
